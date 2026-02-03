@@ -47,16 +47,6 @@
                ReferencedContainer = "container:Vimac.xcodeproj">
             </BuildableReference>
          </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "E261723C2322968700E396CA"
-               BuildableName = "VimacUITests.xctest"
-               BlueprintName = "VimacUITests"
-               ReferencedContainer = "container:Vimac.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
