@@ -1,3 +1,6 @@
+Vimac2
+
+
 # Announcement
 
 Vimac is now [Homerow](https://homerow.app). Homerow is a refined, sleeker, more performant successor of Vimac, incorporating lessons learned from it's predecessor.
