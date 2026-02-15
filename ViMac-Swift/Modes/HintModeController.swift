@@ -48,6 +48,8 @@ enum HintModeInputIntent {
             let action: HintAction = {
                 if (event.modifierFlags.rawValue & NSEvent.ModifierFlags.shift.rawValue == NSEvent.ModifierFlags.shift.rawValue) {
                     return .rightClick
+                } else if (event.modifierFlags.rawValue & NSEvent.ModifierFlags.control.rawValue == NSEvent.ModifierFlags.control.rawValue) {
+                    return .middleClick
                 } else if (event.modifierFlags.rawValue & NSEvent.ModifierFlags.command.rawValue == NSEvent.ModifierFlags.command.rawValue) {
                     return .doubleLeftClick
                 } else if (event.modifierFlags.rawValue & NSEvent.ModifierFlags.option.rawValue == NSEvent.ModifierFlags.option.rawValue) {
@@ -101,6 +103,7 @@ struct Hint {
 enum HintAction: String {
     case leftClick
     case rightClick
+    case middleClick
     case doubleLeftClick
     case move
 }
@@ -321,6 +324,8 @@ class HintModeController: ModeController {
             Utils.leftClickMouse(position: clickPosition)
         case .rightClick:
             Utils.rightClickMouse(position: clickPosition)
+        case .middleClick:
+            Utils.middleClickMouse(position: clickPosition)
         case .doubleLeftClick:
             Utils.doubleLeftClickMouse(position: clickPosition)
         case .move:

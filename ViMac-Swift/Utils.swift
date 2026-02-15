@@ -52,6 +52,19 @@ class Utils: NSObject {
         event?.post(tap: .cghidEventTap)
     }
     
+    static func middleClickMouse(position: CGPoint) {
+        let event = CGEvent(mouseEventSource: nil, mouseType: .otherMouseDown, mouseCursorPosition: position, mouseButton: .center)
+        event?.setIntegerValueField(.mouseEventClickState, value: 1)
+        event?.flags = .init()
+
+        let event2 = CGEvent(mouseEventSource: nil, mouseType: .otherMouseUp, mouseCursorPosition: position, mouseButton: .center)
+        event2?.setIntegerValueField(.mouseEventClickState, value: 1)
+        event2?.flags = .init()
+
+        event?.post(tap: .cghidEventTap)
+        event2?.post(tap: .cghidEventTap)
+    }
+
     static func rightClickMouse(position: CGPoint) {
         let event = CGEvent(mouseEventSource: nil, mouseType: .rightMouseDown, mouseCursorPosition: position, mouseButton: .right)
         event?.setIntegerValueField(.mouseEventClickState, value: 1)
