@@ -104,7 +104,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     AboutPreferencesViewController()
                 ],
                 style: .toolbarItems,
-                animated: true
+                animated: false
             )
             self.preferencesWindowController.window?.delegate = self
         }
