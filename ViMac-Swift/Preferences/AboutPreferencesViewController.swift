@@ -89,12 +89,12 @@ class AboutPreferencesViewController: NSViewController, PreferencePane {
     }
     
     @objc func visitWebsite() {
-        let url = URL(string: "https://vimacapp.com/")!
+        let url = URL(string: "https://transcribetranslate.app/")!
         _ = NSWorkspace.shared.open(url)
     }
     
     @objc func visitGithubRepo() {
-        let url = URL(string: "https://github.com/dexterleng/vimac/")!
+        let url = URL(string: "https://github.com/kaiwen-wang/vimac/")!
         _ = NSWorkspace.shared.open(url)
     }
 }

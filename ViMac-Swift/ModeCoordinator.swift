@@ -179,7 +179,7 @@ class ModeCoordinator: ModeControllerDelegate {
         alert.addButton(withTitle: "No")
         let response = alert.runModal()
         if response == .alertFirstButtonReturn {
-            let url = URL(string: "https://vimacapp.com/pmf-survey")!
+            let url = URL(string: "https://transcribetranslate.app/pmf-survey")!
             _ = NSWorkspace.shared.open(url)
         }
     }
