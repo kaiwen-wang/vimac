@@ -44,10 +44,9 @@ final class GeneralPreferenceViewController: NSViewController, PreferencePane {
         
         NSLayoutConstraint.activate([
             view.widthAnchor.constraint(equalToConstant: 600),
-            grid.topAnchor.constraint(equalTo: view.topAnchor, constant: 20),
+            grid.topAnchor.constraint(equalTo: view.topAnchor, constant: 10),
             grid.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -20),
-            grid.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            grid.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+            grid.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
     }
     

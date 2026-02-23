@@ -50,6 +50,10 @@ class AboutPreferencesViewController: NSViewController, PreferencePane {
         let copyrightNoticeLabel = NSTextField(labelWithString: "Copyright © 2021 Dexter Leng.")
         copyrightNoticeLabel.font = .labelFont(ofSize: 11)
         copyrightNoticeLabel.textColor = .secondaryLabelColor
+
+        let maintainerLabel = NSTextField(labelWithString: "Forked and maintained by Kaiwen Wang (2026).")
+        maintainerLabel.font = .labelFont(ofSize: 11)
+        maintainerLabel.textColor = .secondaryLabelColor
         
         let buttonsStackView = NSStackView(views: [
             NSButton(title: "Visit Website", target: self, action: #selector(visitWebsite)),
@@ -62,6 +66,7 @@ class AboutPreferencesViewController: NSViewController, PreferencePane {
             appNameLabel,
             versionLabel,
             copyrightNoticeLabel,
+            maintainerLabel,
             buttonsStackView
         ])
         descriptionStackView.alignment = .leading
@@ -77,10 +82,9 @@ class AboutPreferencesViewController: NSViewController, PreferencePane {
         
         NSLayoutConstraint.activate([
             view.widthAnchor.constraint(equalToConstant: 600),
-            stackView.topAnchor.constraint(equalTo: view.topAnchor, constant: 40),
+            stackView.topAnchor.constraint(equalTo: view.topAnchor, constant: 20),
             stackView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -40),
-            stackView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            stackView.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+            stackView.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
     }
     

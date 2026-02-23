@@ -56,10 +56,9 @@ class BindingsPreferenceViewController: NSViewController, PreferencePane, NSText
         NSLayoutConstraint.activate([
             view.widthAnchor.constraint(equalToConstant: 600),
             grid.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -200),
-            grid.topAnchor.constraint(equalTo: view.topAnchor, constant: 20),
+            grid.topAnchor.constraint(equalTo: view.topAnchor, constant: 10),
             grid.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -20),
-            grid.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            grid.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+            grid.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
     }
     
