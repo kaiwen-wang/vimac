@@ -74,10 +74,10 @@ final class HintModePreferenceViewController: NSViewController, NSTextFieldDeleg
         modifierSpacer.widthAnchor.constraint(equalToConstant: 20).isActive = true
         
         let modifierListText = """
-        • Shift: Right Click
-        • Control: Middle Click
-        • Command: Double Click
-        • Option: Move Cursor
+        • Shift: Double Click
+        • Option: Middle Click
+        • Command: Right Click
+        • Control: Move Cursor
         • No modifier: Left Click
         """
         
