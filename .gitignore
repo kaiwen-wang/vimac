@@ -29,6 +29,10 @@ VersionX-revision.h
 build/
 *.[oa]
 
+# Carthage build artifacts
+Carthage/Checkouts/*/.build/
+Carthage/Build/.build/
+
 # Other source repository archive directories (protects when importing)
 .hg
 .svn
