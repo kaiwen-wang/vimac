@@ -94,7 +94,7 @@ class AboutPreferencesViewController: NSViewController, PreferencePane {
     }
     
     @objc func visitWebsite() {
-        let url = URL(string: "https://transcribetranslate.app/")!
+        let url = URL(string: "https://transcribetranslate.app/apps/vimac2")!
         _ = NSWorkspace.shared.open(url)
     }
     
