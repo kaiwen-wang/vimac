@@ -7,10 +7,26 @@ BUILD_DIR = build
 APP_NAME = Vimac
 APP_PATH = $(BUILD_DIR)/Build/Products/Debug/$(APP_NAME).app
 TEAM_ID = 5RV873WV4N
+LAST_BUILD_FILE = .last_build_commit
 
 help: ## Show this help message
 	@echo "Available commands:"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36mmake %-15s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36mmake %-15s\033[0m %s\n", $$1, $$2}
+
+# Check if build number needs to be incremented based on git commits
+auto-bump:
+	@CURRENT_COMMIT=$$(git rev-parse HEAD) && \
+	LAST_COMMIT=$$(cat $(LAST_BUILD_FILE) 2>/dev/null || echo "") && \
+	if [ "$$CURRENT_COMMIT" != "$$LAST_COMMIT" ]; then \
+		echo "New commits detected, incrementing build number..."; \
+		BUILD=$$(/usr/libexec/PlistBuddy -c "Print CFBundleVersion" ViMac-Swift/Info.plist) && \
+		NEXT=$$((BUILD + 1)) && \
+		/usr/libexec/PlistBuddy -c "Set :CFBundleVersion $$NEXT" ViMac-Swift/Info.plist && \
+		echo "$$CURRENT_COMMIT" > $(LAST_BUILD_FILE) && \
+		echo "Build number: $$BUILD → $$NEXT"; \
+	else \
+		echo "No new commits, build number unchanged"; \
+	fi
 
 ensure-deps:
 	@if [ ! -d Pods ] || [ ! -d Carthage/Build ]; then \
@@ -18,7 +34,7 @@ ensure-deps:
 		$(MAKE) setup; \
 	fi
 
-build: ensure-deps ## Build the application
+build: auto-bump ensure-deps ## Build the application
 	@echo "Building $(SCHEME)..."
 	@xcodebuild -workspace $(WORKSPACE) \
 		-scheme $(SCHEME) \
@@ -76,7 +92,7 @@ deploy: ## Build, install to /Applications, and run
 	@echo "Launched $(APP_NAME) from /Applications"
 	@open /Applications/$(APP_NAME).app
 
-archive: ## Build a Release archive
+archive: auto-bump ## Build a Release archive
 	@echo "Archiving $(SCHEME)..."
 	@mkdir -p $(BUILD_DIR)
 	@xcodebuild -workspace $(WORKSPACE) \
