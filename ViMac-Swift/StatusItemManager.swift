@@ -54,7 +54,7 @@ extension StatusItemManager : NSMenuDelegate {
     }
 
     @objc func manualClick() {
-        let url = URL(string: "https://transcribetranslate.app/manual")!
+        let url = URL(string: "https://github.com/kaiwen-wang/vimac/")!
         _ = NSWorkspace.shared.open(url)
     }
 
