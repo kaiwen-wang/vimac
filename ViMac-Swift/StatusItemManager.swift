@@ -34,6 +34,7 @@ extension StatusItemManager : NSMenuDelegate {
             menu.removeAllItems()
             menu.addItem(withTitle: "Manual", action: #selector(manualClick), keyEquivalent: "").target = self
             menu.addItem(withTitle: "Report bugs / Suggest features", action: #selector(openGithubIssues), keyEquivalent: "").target = self
+            menu.addItem(withTitle: "Open Accessibility Settings", action: #selector(openAccessibilitySettings), keyEquivalent: "").target = self
             menu.addItem(NSMenuItem.separator())
             
             menu.addItem(withTitle: "About", action: #selector(aboutClick), keyEquivalent: "").target = self
@@ -60,6 +61,11 @@ extension StatusItemManager : NSMenuDelegate {
     
     @objc func openGithubIssues() {
         let url = URL(string: "https://github.com/kaiwen-wang/vimac/issues")!
+        _ = NSWorkspace.shared.open(url)
+    }
+    
+    @objc func openAccessibilitySettings() {
+        let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!
         _ = NSWorkspace.shared.open(url)
     }
     
