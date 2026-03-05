@@ -51,6 +51,10 @@ class AboutPreferencesViewController: NSViewController, PreferencePane {
         copyrightNoticeLabel.font = .labelFont(ofSize: 11)
         copyrightNoticeLabel.textColor = .secondaryLabelColor
 
+        let spacer = NSView()
+        spacer.translatesAutoresizingMaskIntoConstraints = false
+        spacer.heightAnchor.constraint(equalToConstant: 8).isActive = true
+
         let maintainerLabel = NSTextField(labelWithString: "Forked and maintained by Kaiwen Wang (2026).")
         maintainerLabel.font = .labelFont(ofSize: 11)
         maintainerLabel.textColor = .secondaryLabelColor
@@ -66,6 +70,7 @@ class AboutPreferencesViewController: NSViewController, PreferencePane {
             appNameLabel,
             versionLabel,
             copyrightNoticeLabel,
+            spacer,
             maintainerLabel,
             buttonsStackView
         ])
