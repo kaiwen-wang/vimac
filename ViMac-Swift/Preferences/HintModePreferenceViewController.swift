@@ -60,6 +60,34 @@ final class HintModePreferenceViewController: NSViewController, NSTextFieldDeleg
         let textSizeRow: [NSView] = [textSizeLabel, textSizeField]
         grid.addRow(with: textSizeRow)
         
+        let clickModifiersHeader = NSTextField(labelWithString: "Click Modifiers:")
+        clickModifiersHeader.font = .boldSystemFont(ofSize: 13)
+        grid.addRow(with: [clickModifiersHeader, NSGridCell.emptyContentView])
+        
+        let clickModifiersLabel = NSTextField(wrappingLabelWithString: "When typing hint characters, use these modifier keys:")
+        clickModifiersLabel.font = .labelFont(ofSize: 12)
+        clickModifiersLabel.textColor = .secondaryLabelColor
+        grid.addRow(with: [NSGridCell.emptyContentView, clickModifiersLabel])
+        
+        let modifierSpacer = NSView()
+        modifierSpacer.translatesAutoresizingMaskIntoConstraints = false
+        modifierSpacer.widthAnchor.constraint(equalToConstant: 20).isActive = true
+        
+        let modifierListText = """
+        • Shift: Right Click
+        • Control: Middle Click
+        • Command: Double Click
+        • Option: Move Cursor
+        • No modifier: Left Click
+        """
+        
+        let modifierList = NSTextField(wrappingLabelWithString: modifierListText)
+        modifierList.font = NSFont.systemFont(ofSize: 11)
+        modifierList.textColor = .secondaryLabelColor
+        
+        let modifierListRow: [NSView] = [modifierSpacer, modifierList]
+        grid.addRow(with: modifierListRow)
+        
         self.view.addSubview(grid)
         
         NSLayoutConstraint.activate([
