@@ -75,8 +75,8 @@ final class HintModePreferenceViewController: NSViewController, NSTextFieldDeleg
         
         let modifierListText = """
         • Shift: Double Click
-        • Option: Middle Click
-        • Command: Right Click
+        • Command: Middle Click
+        • Option: Right Click
         • Control: Move Cursor
         • No modifier: Left Click
         """
