@@ -38,11 +38,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         InputSourceManager.initialize()
         overlayWindowController = OverlayWindowController()
         
-        LaunchAtLogin.isEnabled = UserDefaults.standard.bool(forKey: Utils.shouldLaunchOnStartupKey)
         KeyboardShortcuts.shared.registerDefaults()
         UserDefaults.standard.register(defaults: [
-            Utils.shouldLaunchOnStartupKey: false,
+            Utils.shouldLaunchOnStartupKey: true,
         ])
+        LaunchAtLogin.isEnabled = UserDefaults.standard.bool(forKey: Utils.shouldLaunchOnStartupKey)
         
         self.compositeDisposable = CompositeDisposable()
         
