@@ -1,4 +1,4 @@
-.PHONY: build run qr clean deploy open kill logs help lint bump bump-version changelog setup ensure-deps
+.PHONY: build run qr clean deploy install launch-installed open kill logs help lint bump bump-version changelog setup ensure-deps check-tools brew-deps
 
 # Project configuration
 WORKSPACE = Vimac.xcworkspace
@@ -29,6 +29,7 @@ auto-bump:
 	fi
 
 ensure-deps:
+	@$(MAKE) check-tools
 	@if [ ! -d Pods ] || [ ! -d Carthage/Build ]; then \
 		echo "Dependencies missing, running setup..."; \
 		$(MAKE) setup; \
@@ -41,6 +42,10 @@ build: auto-bump ensure-deps ## Build the application
 		-configuration Debug \
 		-derivedDataPath $(BUILD_DIR) \
 		-destination 'platform=macOS,arch=arm64' \
+		CODE_SIGNING_ALLOWED=NO \
+		CODE_SIGNING_REQUIRED=NO \
+		CODE_SIGN_IDENTITY="" \
+		DEVELOPMENT_TEAM="" \
 		BUILD_ENV=CI \
 		build
 
@@ -51,6 +56,10 @@ lint: ## Quick compile check - shows only errors and warnings
 		-configuration Debug \
 		-derivedDataPath $(BUILD_DIR) \
 		-destination 'platform=macOS,arch=arm64' \
+		CODE_SIGNING_ALLOWED=NO \
+		CODE_SIGNING_REQUIRED=NO \
+		CODE_SIGN_IDENTITY="" \
+		DEVELOPMENT_TEAM="" \
 		BUILD_ONLY_ACTIVE_ARCH=YES \
 		build 2>&1 | grep -E '(error:|warning:)' || echo "✓ No errors or warnings"
 
@@ -90,6 +99,19 @@ deploy: ## Build, install to /Applications, and run
 	@if [ -d /Applications/$(APP_NAME).app ]; then /usr/bin/trash /Applications/$(APP_NAME).app; fi
 	@cp -r $(APP_PATH) /Applications/
 	@echo "Launched $(APP_NAME) from /Applications"
+	@open /Applications/$(APP_NAME).app
+
+install: ## Install already-built app to /Applications (no build)
+	@if [ ! -d "$(APP_PATH)" ]; then \
+		echo "ERROR: Built app not found at: $(APP_PATH)"; \
+		echo "Run: make build"; \
+		exit 2; \
+	fi
+	@if [ -d /Applications/$(APP_NAME).app ]; then /usr/bin/trash /Applications/$(APP_NAME).app; fi
+	@cp -r "$(APP_PATH)" /Applications/
+	@echo "Installed $(APP_NAME) to /Applications"
+
+launch-installed: ## Launch /Applications/Vimac.app (no build/install)
 	@open /Applications/$(APP_NAME).app
 
 archive: auto-bump ## Build a Release archive
@@ -146,3 +168,34 @@ setup: ## Install dependencies (CocoaPods + Carthage)
 	@echo "Building Carthage dependencies..."
 	@carthage build
 	@echo "Setup complete! Run 'make build' to build the app."
+
+check-tools: ## Verify required tools are installed
+	@missing=0; \
+	if ! command -v pod >/dev/null 2>&1; then \
+		echo ""; \
+		echo "ERROR: CocoaPods ('pod') is not installed."; \
+		echo ""; \
+		echo "Install (Ruby >= 3 recommended):"; \
+		echo "  gem install cocoapods"; \
+		echo ""; \
+		echo "Notes:"; \
+		echo "  - Avoid 'sudo gem ...' (often uses macOS system Ruby)."; \
+		echo "  - If you use mise/asdf/etc, ensure that Ruby is activated in this shell."; \
+		missing=1; \
+	fi; \
+	if ! command -v carthage >/dev/null 2>&1; then \
+		echo ""; \
+		echo "ERROR: Carthage ('carthage') is not installed."; \
+		echo ""; \
+		echo "Install:"; \
+		echo "  brew install carthage"; \
+		missing=1; \
+	fi; \
+	if [ $$missing -ne 0 ]; then \
+		echo ""; \
+		echo "Once installed, re-run: make setup (or make deploy)"; \
+		exit 2; \
+	fi
+
+brew-deps: ## Install Homebrew deps via Brewfile (optional)
+	@brew bundle --file ./Brewfile

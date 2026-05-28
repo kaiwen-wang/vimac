@@ -42,11 +42,36 @@ HJKL keys can be used to scroll within the scroll area.
 
 ## Building
 
+### Prerequisites
+
+- **Xcode**: Install from the Mac App Store
+- **Homebrew**: used for Carthage (`brew`)
+- **Ruby ≥ 3**: required for CocoaPods (recommend a version manager like `mise`)
+- **CocoaPods**: `pod`
+- **Carthage**: `carthage`
+
+### Setup
+
+Recommended (Makefile will verify tools and guide you):
+
 ```
+make setup
+open Vimac.xcworkspace
+```
+
+Manual:
+
+```
+gem install cocoapods
+brew install carthage
 pod install
 carthage build
 open Vimac.xcworkspace
 ```
+
+Notes:
+
+- Avoid `sudo gem install ...` unless you intend to use the macOS system Ruby. If you use `mise`, make sure it’s activated in your shell so `ruby`/`gem` point to the mise Ruby.
 
 Modify the Signing and Capabilities to the following (note the `Disable Library Validation` option):
 
