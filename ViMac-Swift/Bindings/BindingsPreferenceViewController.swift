@@ -91,7 +91,7 @@ class BindingsPreferenceViewController: NSViewController, PreferencePane, NSText
         keySequenceHeaderLabel.font = .boldSystemFont(ofSize: 13)
         grid.addRow(with: [keySequenceHeaderLabel])
         
-        let keySequenceHeaderHint1 = NSTextField(wrappingLabelWithString: "Activate Vimac by typing key-sequences")
+        let keySequenceHeaderHint1 = NSTextField(wrappingLabelWithString: "Quickly activate Vimac by typing key-sequences")
         keySequenceHeaderHint1.font = .labelFont(ofSize: 13)
         keySequenceHeaderHint1.textColor = .secondaryLabelColor
         grid.addRow(with: [keySequenceHeaderHint1])

@@ -44,6 +44,7 @@ final class GeneralPreferenceViewController: NSViewController, PreferencePane {
         
         NSLayoutConstraint.activate([
             view.widthAnchor.constraint(equalToConstant: 600),
+            grid.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -200),
             grid.topAnchor.constraint(equalTo: view.topAnchor, constant: 10),
             grid.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -20),
             grid.centerXAnchor.constraint(equalTo: view.centerXAnchor)
@@ -56,6 +57,12 @@ final class GeneralPreferenceViewController: NSViewController, PreferencePane {
         forceKBLayoutView.action = #selector(onForceKBLayoutChange)
         selectActiveForceKBLayout()
         grid.addRow(with: [forceKBLayoutLabel, forceKBLayoutView])
+
+        let forceKBLayoutHint = NSTextField(wrappingLabelWithString: "Temporarily switches your macOS input source while Vimac modes are active, so hint/scroll keys stay consistent even if your keyboard layout changes.")
+        forceKBLayoutHint.font = .labelFont(ofSize: 11)
+        forceKBLayoutHint.textColor = .secondaryLabelColor
+        forceKBLayoutHint.lineBreakMode = .byWordWrapping
+        grid.addRow(with: [NSGridCell.emptyContentView, forceKBLayoutHint])
         
         let launchAtLoginLabel = NSTextField(labelWithString: "Startup:")
         launchAtLoginView = NSButton(checkboxWithTitle: "Launch at Login", target: self, action: #selector(onLaunchAtLoginChange))

@@ -76,8 +76,10 @@ class KeySequenceListener {
             return event
         }
         
-        let modifiersPresent = nsEvent.modifierFlags.rawValue != 256
-        if modifiersPresent {
+        // Ignore sequences typed with any modifiers held.
+        // (Don't rely on rawValue equality; it varies by event/source.)
+        let disallowedModifiers: NSEvent.ModifierFlags = [.shift, .control, .option, .command, .capsLock, .function]
+        if !nsEvent.modifierFlags.intersection(disallowedModifiers).isEmpty {
             resetInput()
             return event
         }

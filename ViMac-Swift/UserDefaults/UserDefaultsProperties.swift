@@ -11,9 +11,9 @@ import Cocoa
 struct UserDefaultsProperties {
     static let holdSpaceHintModeActivationEnabled = UserDefaultsProperty<Bool>.init("holdSpaceHintModeActivationEnabled", defaultValue: false)
     static let keySequenceHintModeEnabled = UserDefaultsProperty<Bool>.init("keySequenceHintModeEnabled", defaultValue: false)
-    static let keySequenceHintMode = UserDefaultsProperty<String>.init("keySequenceHintMode", defaultValue: "")
+    static let keySequenceHintMode = UserDefaultsProperty<String>.init("keySequenceHintMode", defaultValue: "fd")
     static let keySequenceScrollModeEnabled = UserDefaultsProperty<Bool>.init("keySequenceScrollModeEnabled", defaultValue: false)
-    static let keySequenceScrollMode = UserDefaultsProperty<String>.init("keySequenceScrollMode", defaultValue: "")
+    static let keySequenceScrollMode = UserDefaultsProperty<String>.init("keySequenceScrollMode", defaultValue: "jk")
     static let keySequenceResetDelay = UserDefaultsProperty<String>.init("keySequenceResetDelay", defaultValue: "0.25")
     
     static let AXEnhancedUserInterfaceEnabled = UserDefaultsProperty<Bool>.init("AXEnhancedUserInterfaceEnabled", defaultValue: false)
