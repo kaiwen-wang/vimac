@@ -6,7 +6,13 @@ import RxSwift
 // Similarly, electron uses `AXManualAccessibility`:
 // https://electronjs.org/docs/tutorial/accessibility#assistive-technology
 class AXManualAccessibilityActivator {
+    private static let lock = NSLock()
+    private static var activatedPids = Set<pid_t>()
+
     static func activate(_ app: NSRunningApplication) {
+        lock.lock()
+        activatedPids.insert(app.processIdentifier)
+        lock.unlock()
         activate(AXUIElementCreateApplication(app.processIdentifier))
     }
     
@@ -15,6 +21,9 @@ class AXManualAccessibilityActivator {
     }
     
     static func deactivate(_ app: NSRunningApplication) {
+        lock.lock()
+        activatedPids.remove(app.processIdentifier)
+        lock.unlock()
         deactivate(AXUIElementCreateApplication(app.processIdentifier))
     }
     
@@ -23,11 +32,13 @@ class AXManualAccessibilityActivator {
     }
     
     static func deactivateAll() {
-        let apps = NSWorkspace.shared.runningApplications
-        let pids = apps.map { $0.processIdentifier }
-        let elements = pids.map { AXUIElementCreateApplication($0) }
-        
-        for element in elements {
+        lock.lock()
+        let pids = activatedPids
+        activatedPids.removeAll()
+        lock.unlock()
+
+        for pid in pids {
+            let element = AXUIElementCreateApplication(pid)
             _ = setAttribute(app: element, value: false)
         }
     }
