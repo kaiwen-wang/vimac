@@ -106,6 +106,27 @@ modified:   grant-accessibility-permission-dev.scpt
 
 Avoid committing them.
 
+## CI and releases
+
+GitHub Actions runs on every push and pull request to `master` / `main`:
+
+- **CI** (`.github/workflows/ci.yml`) — installs CocoaPods/Carthage dependencies and runs `make ci-build`.
+
+To publish a **GitHub Release** with a zipped `.app`:
+
+1. Bump the version in `ViMac-Swift/Info.plist` if needed (the workflow also sets `CFBundleShortVersionString` from the tag).
+2. Commit and push.
+3. Create and push a version tag:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+The **Release** workflow (`.github/workflows/release.yml`) builds an unsigned Release `.app`, zips it, and attaches it to a GitHub Release. Builds are unsigned, so macOS Gatekeeper may require right-click → Open the first time.
+
+For signed/notarized builds (App Store or Sparkle distribution), you need Apple Developer certificates configured as repository secrets; the local `make archive` target is set up for that path.
+
 ## Contributing
 
 Feel free to contribute to Vimac. Make sure to open an issue / ask to work on something first!

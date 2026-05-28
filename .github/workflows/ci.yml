@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            Pods
+            Carthage/Build
+            ~/Library/Caches/Carthage
+          key: ${{ runner.os }}-deps-${{ hashFiles('Podfile.lock', 'Cartfile.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-deps-
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: false
+
+      - name: Install tools
+        run: |
+          gem install cocoapods
+          brew install carthage
+
+      - name: Install dependencies
+        run: make setup
+
+      - name: Build
+        env:
+          CI: "true"
+        run: make ci-build

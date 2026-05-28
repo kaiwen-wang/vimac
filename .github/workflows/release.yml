@@ -1,0 +1,80 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            Pods
+            Carthage/Build
+            ~/Library/Caches/Carthage
+          key: ${{ runner.os }}-deps-${{ hashFiles('Podfile.lock', 'Cartfile.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-deps-
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: false
+
+      - name: Install tools
+        run: |
+          gem install cocoapods
+          brew install carthage
+
+      - name: Install dependencies
+        run: make setup
+
+      - name: Set version from tag
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION" ViMac-Swift/Info.plist
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - name: Build Release
+        env:
+          CI: "true"
+        run: make release-build
+
+      - name: Package app
+        run: |
+          APP_PATH="build/Build/Products/Release/Vimac.app"
+          test -d "$APP_PATH"
+          ditto -c -k --keepParent "$APP_PATH" "Vimac-${VERSION}-macOS-arm64.zip"
+
+      - name: Generate release notes
+        run: |
+          PREV_TAG=$(git describe --tags --abbrev=0 "${GITHUB_REF_NAME}^" 2>/dev/null || true)
+          {
+            echo "## Vimac v${VERSION}"
+            echo ""
+            if [ -n "$PREV_TAG" ]; then
+              echo "Changes since ${PREV_TAG}:"
+              echo ""
+              git log "${PREV_TAG}..HEAD" --no-merges --pretty=format:"- %s"
+            else
+              git log --no-merges --pretty=format:"- %s"
+            fi
+          } > release-notes.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "v${{ env.VERSION }}"
+          body_path: release-notes.md
+          files: Vimac-${{ env.VERSION }}-macOS-arm64.zip
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}

@@ -1,4 +1,4 @@
-.PHONY: build run qr clean deploy install launch-installed open kill logs help lint bump bump-version changelog setup ensure-deps check-tools brew-deps
+.PHONY: build ci-build release-build run qr clean deploy install launch-installed open kill logs help lint bump bump-version changelog setup ensure-deps check-tools brew-deps
 
 # Project configuration
 WORKSPACE = Vimac.xcworkspace
@@ -35,18 +35,38 @@ ensure-deps:
 		$(MAKE) setup; \
 	fi
 
-build: auto-bump ensure-deps ## Build the application
+ifeq ($(CI),true)
+BUILD_DEPS = ensure-deps
+else
+BUILD_DEPS = auto-bump ensure-deps
+endif
+
+XCODEBUILD_UNSIGNED = xcodebuild -workspace $(WORKSPACE) \
+	-scheme $(SCHEME) \
+	-derivedDataPath $(BUILD_DIR) \
+	-destination 'platform=macOS,arch=arm64' \
+	CODE_SIGNING_ALLOWED=NO \
+	CODE_SIGNING_REQUIRED=NO \
+	CODE_SIGN_IDENTITY="" \
+	DEVELOPMENT_TEAM="" \
+	BUILD_ENV=CI
+
+build: $(BUILD_DEPS) ## Build the application (Debug, unsigned)
 	@echo "Building $(SCHEME)..."
-	@xcodebuild -workspace $(WORKSPACE) \
-		-scheme $(SCHEME) \
+	@$(XCODEBUILD_UNSIGNED) \
 		-configuration Debug \
-		-derivedDataPath $(BUILD_DIR) \
-		-destination 'platform=macOS,arch=arm64' \
-		CODE_SIGNING_ALLOWED=NO \
-		CODE_SIGNING_REQUIRED=NO \
-		CODE_SIGN_IDENTITY="" \
-		DEVELOPMENT_TEAM="" \
-		BUILD_ENV=CI \
+		build
+
+ci-build: ensure-deps ## CI build (Debug, unsigned; skips auto-bump)
+	@echo "Building $(SCHEME) for CI..."
+	@$(XCODEBUILD_UNSIGNED) \
+		-configuration Debug \
+		build
+
+release-build: ensure-deps ## Release build (unsigned; for GitHub Releases)
+	@echo "Building $(SCHEME) (Release)..."
+	@$(XCODEBUILD_UNSIGNED) \
+		-configuration Release \
 		build
 
 lint: ## Quick compile check - shows only errors and warnings
