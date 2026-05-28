@@ -1,4 +1,9 @@
-Vimac2
+# A FORK of the original VIMAC
+
+I am maintaining this app to keep up to date.
+
+---
+
 
 # Vimac - Productive macOS keyboard-driven navigation
 
