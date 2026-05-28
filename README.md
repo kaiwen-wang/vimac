@@ -2,6 +2,10 @@
 
 I am maintaining this app to keep up to date.
 
+Todo:
+- Set up updater
+- Fix any bugs/outdated links
+
 ---
 
 
