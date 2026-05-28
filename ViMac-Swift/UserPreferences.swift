@@ -34,6 +34,67 @@ extension PreferenceProperty {
 
 struct UserPreferences {
     struct HintMode {
+        enum ClickModifier: String {
+            case shift
+            case command
+            case option
+            case control
+        }
+
+        /// Stores mappings as "{shift},{command},{option},{control}" where each entry is one of:
+        /// leftClick,rightClick,middleClick,doubleLeftClick,move
+        class ClickModifierBindingsProperty : PreferenceProperty {
+            typealias T = String
+
+            static var key = "HintClickModifierBindings"
+            // Default matches current hardcoded behavior:
+            // Shift=RightClick, Command=DoubleClick, Option=MiddleClick, Control=Move
+            static var defaultValue = "rightClick,doubleLeftClick,middleClick,move"
+
+            static func isValid(value: String) -> Bool {
+                let parts = value.components(separatedBy: ",")
+                guard parts.count == 4 else { return false }
+                let allowed = Set(["leftClick", "rightClick", "middleClick", "doubleLeftClick", "move"])
+                guard parts.allSatisfy({ allowed.contains($0) }) else { return false }
+                // Require uniqueness: one action per modifier.
+                return Set(parts).count == parts.count
+            }
+
+            static func readAsMap() -> [ClickModifier: HintAction] {
+                let parts = read().components(separatedBy: ",")
+                func toAction(_ s: String) -> HintAction {
+                    switch s {
+                    case "leftClick": return .leftClick
+                    case "rightClick": return .rightClick
+                    case "middleClick": return .middleClick
+                    case "doubleLeftClick": return .doubleLeftClick
+                    case "move": return .move
+                    default: return .leftClick
+                    }
+                }
+                return [
+                    .shift: toAction(parts[0]),
+                    .command: toAction(parts[1]),
+                    .option: toAction(parts[2]),
+                    .control: toAction(parts[3]),
+                ]
+            }
+
+            static func save(map: [ClickModifier: HintAction]) {
+                func s(_ m: ClickModifier) -> String {
+                    switch map[m] ?? .leftClick {
+                    case .leftClick: return "leftClick"
+                    case .rightClick: return "rightClick"
+                    case .middleClick: return "middleClick"
+                    case .doubleLeftClick: return "doubleLeftClick"
+                    case .move: return "move"
+                    }
+                }
+                let encoded = [s(.shift), s(.command), s(.option), s(.control)].joined(separator: ",")
+                save(value: encoded)
+            }
+        }
+
         class CustomCharactersProperty : PreferenceProperty {
             typealias T = String
             
@@ -75,7 +136,8 @@ struct UserPreferences {
             typealias T = String
             
             static var key = "ScrollCharacters"
-            static var defaultValue = "h,j,k,l,d,u,G,gg"
+            // Default swapped from Vim-like: j=up, k=down.
+            static var defaultValue = "h,k,j,l,d,u,G,gg"
             
             static func isValid(value keys: String) -> Bool {
                 let keySequences = keys.components(separatedBy: ",")

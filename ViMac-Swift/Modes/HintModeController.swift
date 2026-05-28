@@ -45,19 +45,20 @@ enum HintModeInputIntent {
         if event.keyCode == kVK_Space { return .rotate }
 
         if let characters = event.charactersIgnoringModifiers {
-            let action: HintAction = {
-                if (event.modifierFlags.rawValue & NSEvent.ModifierFlags.shift.rawValue == NSEvent.ModifierFlags.shift.rawValue) {
-                    return .rightClick
-                } else if (event.modifierFlags.rawValue & NSEvent.ModifierFlags.command.rawValue == NSEvent.ModifierFlags.command.rawValue) {
-                    return .doubleLeftClick
-                } else if (event.modifierFlags.rawValue & NSEvent.ModifierFlags.option.rawValue == NSEvent.ModifierFlags.option.rawValue) {
-                    return .middleClick
-                } else if (event.modifierFlags.rawValue & NSEvent.ModifierFlags.control.rawValue == NSEvent.ModifierFlags.control.rawValue) {
-                    return .move
-                } else {
-                    return .leftClick
-                }
-            }()
+            let bindings = UserPreferences.HintMode.ClickModifierBindingsProperty.readAsMap()
+            let flags = event.modifierFlags
+            let action: HintAction
+            if flags.contains(.shift) {
+                action = bindings[.shift] ?? .rightClick
+            } else if flags.contains(.command) {
+                action = bindings[.command] ?? .doubleLeftClick
+            } else if flags.contains(.option) {
+                action = bindings[.option] ?? .middleClick
+            } else if flags.contains(.control) {
+                action = bindings[.control] ?? .move
+            } else {
+                action = .leftClick
+            }
             return .advance(by: characters, action: action)
         }
 

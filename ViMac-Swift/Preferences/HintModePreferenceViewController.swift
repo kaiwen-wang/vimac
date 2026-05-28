@@ -9,6 +9,7 @@ final class HintModePreferenceViewController: NSViewController, NSTextFieldDeleg
     private var grid: NSGridView!
     private var customCharactersField: NSTextField!
     private var textSizeField: NSTextField!
+    private var modifierPopups: [UserPreferences.HintMode.ClickModifier: NSPopUpButton] = [:]
     
     init() {
         if #available(OSX 11.0, *) {
@@ -68,25 +69,18 @@ final class HintModePreferenceViewController: NSViewController, NSTextFieldDeleg
         clickModifiersLabel.font = .labelFont(ofSize: 12)
         clickModifiersLabel.textColor = .secondaryLabelColor
         grid.addRow(with: [NSGridCell.emptyContentView, clickModifiersLabel])
-        
-        let modifierSpacer = NSView()
-        modifierSpacer.translatesAutoresizingMaskIntoConstraints = false
-        modifierSpacer.widthAnchor.constraint(equalToConstant: 20).isActive = true
-        
-        let modifierListText = """
-        • Shift: Right Click
-        • Command: Double Click
-        • Option: Middle Click
-        • Control: Move Cursor
-        • No modifier: Left Click
-        """
-        
-        let modifierList = NSTextField(wrappingLabelWithString: modifierListText)
-        modifierList.font = NSFont.systemFont(ofSize: 11)
-        modifierList.textColor = .secondaryLabelColor
-        
-        let modifierListRow: [NSView] = [modifierSpacer, modifierList]
-        grid.addRow(with: modifierListRow)
+
+        let bindingsView = buildClickModifierBindingsView()
+        grid.addRow(with: [NSGridCell.emptyContentView, bindingsView])
+
+        let noModifierHint = NSTextField(wrappingLabelWithString: "No modifier: Left Click")
+        noModifierHint.font = .labelFont(ofSize: 11)
+        noModifierHint.textColor = .secondaryLabelColor
+        grid.addRow(with: [NSGridCell.emptyContentView, noModifierHint])
+
+        let resetButton = NSButton(title: "Reset Click Modifiers", target: self, action: #selector(onResetClickModifiers))
+        resetButton.bezelStyle = .rounded
+        grid.addRow(with: [NSGridCell.emptyContentView, resetButton])
         
         self.view.addSubview(grid)
         
@@ -97,6 +91,144 @@ final class HintModePreferenceViewController: NSViewController, NSTextFieldDeleg
             grid.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -20),
             grid.centerXAnchor.constraint(equalTo: view.centerXAnchor),
         ])
+    }
+
+    private enum ClickActionChoice: String, CaseIterable {
+        case leftClick
+        case rightClick
+        case middleClick
+        case doubleLeftClick
+        case move
+
+        var title: String {
+            switch self {
+            case .leftClick: return "Left Click"
+            case .rightClick: return "Right Click"
+            case .middleClick: return "Middle Click"
+            case .doubleLeftClick: return "Double Click"
+            case .move: return "Move Cursor"
+            }
+        }
+
+        var action: HintAction {
+            switch self {
+            case .leftClick: return .leftClick
+            case .rightClick: return .rightClick
+            case .middleClick: return .middleClick
+            case .doubleLeftClick: return .doubleLeftClick
+            case .move: return .move
+            }
+        }
+
+        static func from(action: HintAction) -> ClickActionChoice {
+            switch action {
+            case .leftClick: return .leftClick
+            case .rightClick: return .rightClick
+            case .middleClick: return .middleClick
+            case .doubleLeftClick: return .doubleLeftClick
+            case .move: return .move
+            }
+        }
+    }
+
+    private func buildClickModifierBindingsView() -> NSView {
+        let container = NSGridView(numberOfColumns: 2, rows: 0)
+        container.translatesAutoresizingMaskIntoConstraints = false
+        container.rowSpacing = 6
+        container.columnSpacing = 10
+        container.column(at: 0).xPlacement = .trailing
+
+        let current = UserPreferences.HintMode.ClickModifierBindingsProperty.readAsMap()
+
+        func makePopup(selected: ClickActionChoice) -> NSPopUpButton {
+            let popup = NSPopUpButton()
+            popup.translatesAutoresizingMaskIntoConstraints = false
+            popup.target = self
+            popup.action = #selector(onClickModifierPopupChanged)
+            popup.wantsLayer = true
+            popup.layer?.cornerRadius = 6
+            popup.layer?.borderWidth = 1
+            popup.layer?.borderColor = NSColor.separatorColor.cgColor
+            popup.contentTintColor = .labelColor
+            ClickActionChoice.allCases.forEach { popup.addItem(withTitle: $0.title) }
+            popup.selectItem(withTitle: selected.title)
+            return popup
+        }
+
+        let rows: [(UserPreferences.HintMode.ClickModifier, String)] = [
+            (.shift, "Shift"),
+            (.command, "Command"),
+            (.option, "Option"),
+            (.control, "Control"),
+        ]
+
+        for (modifier, title) in rows {
+            let label = NSTextField(labelWithString: "\(title):")
+            label.font = .labelFont(ofSize: 12)
+            let choice = ClickActionChoice.from(action: current[modifier] ?? .leftClick)
+            let popup = makePopup(selected: choice)
+            modifierPopups[modifier] = popup
+            container.addRow(with: [label, popup])
+        }
+
+        markDuplicateClickModifierBindings()
+        return container
+    }
+
+    @objc private func onClickModifierPopupChanged() {
+        let map = currentClickModifierMapFromUI()
+        UserPreferences.HintMode.ClickModifierBindingsProperty.save(map: map)
+        markDuplicateClickModifierBindings()
+    }
+
+    private func currentClickModifierMapFromUI() -> [UserPreferences.HintMode.ClickModifier: HintAction] {
+        func selectedChoice(_ modifier: UserPreferences.HintMode.ClickModifier) -> ClickActionChoice {
+            guard let title = modifierPopups[modifier]?.titleOfSelectedItem else { return .leftClick }
+            return ClickActionChoice.allCases.first(where: { $0.title == title }) ?? .leftClick
+        }
+        return [
+            .shift: selectedChoice(.shift).action,
+            .command: selectedChoice(.command).action,
+            .option: selectedChoice(.option).action,
+            .control: selectedChoice(.control).action,
+        ]
+    }
+
+    private func markDuplicateClickModifierBindings() {
+        let map = currentClickModifierMapFromUI()
+        let actions = map.values.map { ClickActionChoice.from(action: $0).rawValue }
+        var counts: [String: Int] = [:]
+        for a in actions { counts[a, default: 0] += 1 }
+
+        for (modifier, popup) in modifierPopups {
+            let choice = ClickActionChoice.from(action: map[modifier] ?? .leftClick).rawValue
+            let isDuplicate = (counts[choice] ?? 0) > 1
+            popup.layer?.borderColor = (isDuplicate ? NSColor.systemRed : NSColor.separatorColor).cgColor
+            popup.layer?.borderWidth = isDuplicate ? 2 : 1
+        }
+    }
+
+    @objc private func onResetClickModifiers() {
+        // Reset UI to defaults (and persist).
+        let defaults = UserPreferences.HintMode.ClickModifierBindingsProperty.defaultValue.components(separatedBy: ",")
+        let map: [UserPreferences.HintMode.ClickModifier: HintAction] = [
+            .shift: ClickActionChoice(rawValue: defaults[0])?.action ?? .rightClick,
+            .command: ClickActionChoice(rawValue: defaults[1])?.action ?? .doubleLeftClick,
+            .option: ClickActionChoice(rawValue: defaults[2])?.action ?? .middleClick,
+            .control: ClickActionChoice(rawValue: defaults[3])?.action ?? .move,
+        ]
+        UserPreferences.HintMode.ClickModifierBindingsProperty.save(map: map)
+
+        let byModifier: [(UserPreferences.HintMode.ClickModifier, ClickActionChoice)] = [
+            (.shift, .from(action: map[.shift] ?? .rightClick)),
+            (.command, .from(action: map[.command] ?? .doubleLeftClick)),
+            (.option, .from(action: map[.option] ?? .middleClick)),
+            (.control, .from(action: map[.control] ?? .move)),
+        ]
+        for (modifier, choice) in byModifier {
+            modifierPopups[modifier]?.selectItem(withTitle: choice.title)
+        }
+        markDuplicateClickModifierBindings()
     }
     
     func onCustomCharactersFieldChange() {
