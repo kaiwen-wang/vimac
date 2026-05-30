@@ -98,17 +98,21 @@ class TraverseSearchPredicateCompatibleWebAreaElementService : TraverseElementSe
         if multiSearchKeyQueryMatches > 0 {
             let rawElements: [AXUIElement]? = try UIElement(element.rawElement).parameterizedAttribute("AXUIElementsForSearchPredicate", param: multiSearchKeyQuery)
             let elements = rawElements?
+                // AXUIElementsForSearchPredicate can return CFArray entries that aren't AXUIElements
+                // (a WebKit/Chromium quirk); these would trip AXSwift's CFGetTypeID assertion in
+                // UIElement.init under debug builds, so drop them before constructing Elements.
+                .filter({ CFGetTypeID($0) == AXUIElementGetTypeID() })
                 .map({ Element.initialize(rawElement: $0) })
                 .compactMap({ $0 })
             return elements
         }
-        
+
         var elements: [AXUIElement] = []
         for searchKey in searchKeys {
             var singleSearchKeyQuery = query
             singleSearchKeyQuery["AXSearchKey"] = searchKey
             if let rawElements: [AXUIElement] = try UIElement(element.rawElement).parameterizedAttribute("AXUIElementsForSearchPredicate", param: singleSearchKeyQuery) {
-                elements.append(contentsOf: rawElements)
+                elements.append(contentsOf: rawElements.filter({ CFGetTypeID($0) == AXUIElementGetTypeID() }))
             }
         }
         
