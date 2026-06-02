@@ -1,9 +1,34 @@
-# A FORK of the original VIMAC
+# A fork of the original Vimac
 
-I am maintaining this app to keep up to date.
+Maintained fork of [Vimac](https://github.com/dexterleng/vimac) by [kaiwen-wang](https://github.com/kaiwen-wang). Download releases from [GitHub Releases](https://github.com/kaiwen-wang/vimac/releases); updates are delivered via Sparkle.
 
-Todo:
-- Fix any bugs/outdated links
+## Improvements in this fork
+
+### Hint mode
+- **Middle-click** support in hint mode
+- **Click modifiers** remapped and documented (Shift = double-click, Option = middle-click, Command = right-click, Control = move without clicking)
+- **Crash fix** when generating hints over web areas (e.g. browser content)
+- **Faster quit** by limiting accessibility tree teardown on exit
+- **Defaults**: launch at login on; hold-space hint activation off (less accidental activation)
+
+### Scroll mode
+- **Instant j/k reversal** — rapidly alternating scroll keys switches direction immediately, including overlapping key presses
+- **Smoother scrolling** — higher-frequency ticks, sub-pixel accumulation, and trackpad-style scroll phases
+- **Less Vim-like defaults** — scroll key directions swapped (e.g. j = up, k = down) to match macOS expectations
+
+### Preferences & UX
+- Click modifier controls use **native picker styling** and match other preference panes
+- **Open Accessibility Settings** menu item for quicker permission setup
+- Preference pane switching **without animation** flicker
+- Key sequence activation defaults fixed; keyboard layout behavior documented in settings
+
+### Distribution & development
+- **Analytics removed**
+- **Sparkle auto-updates** via GitHub-hosted appcast (migrated from App Center)
+- **GitHub Actions** for CI and tagged releases (signed Sparkle feed, release notes)
+- **Makefile** for build, run, deploy, and dependency setup
+- **macOS 26 / Xcode compatibility** fixes (CoreGraphics import, pod deployment target)
+- Unsigned **Debug builds** and improved local dev workflow
 
 ---
 
