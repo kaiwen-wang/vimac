@@ -13,6 +13,9 @@ jobs:
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Full history required so git log PREV_TAG..TAG includes all release commits.
+          fetch-depth: 0
 
       - name: Cache dependencies
         uses: actions/cache@v4
@@ -64,15 +67,19 @@ jobs:
           ditto -c -k --keepParent "$APP_PATH" "$ZIP_PATH"
 
           PREV_TAG=$(git describe --tags --abbrev=0 "${GITHUB_REF_NAME}^" 2>/dev/null || true)
+          LOG_RANGE="${GITHUB_REF_NAME}"
+          if [ -n "$PREV_TAG" ]; then
+            LOG_RANGE="${PREV_TAG}..${GITHUB_REF_NAME}"
+          fi
           {
             echo "## Vimac v${VERSION}"
             echo ""
             if [ -n "$PREV_TAG" ]; then
               echo "Changes since ${PREV_TAG}:"
               echo ""
-              git log "${PREV_TAG}..HEAD" --no-merges --pretty=format:"- %s"
+              git log "${LOG_RANGE}" --no-merges --pretty=format:"- %s"
             else
-              git log --no-merges --pretty=format:"- %s"
+              git log "${LOG_RANGE}" --no-merges --pretty=format:"- %s"
             fi
           } > release-notes.md
 
@@ -83,11 +90,7 @@ jobs:
             echo "<title>Vimac v${VERSION}</title></head><body>"
             echo "<h2>Vimac v${VERSION}</h2>"
             echo "<ul>"
-            if [ -n "$PREV_TAG" ]; then
-              git log "${PREV_TAG}..HEAD" --no-merges --pretty=format:"<li>%s</li>"
-            else
-              git log --no-merges --pretty=format:"<li>%s</li>"
-            fi
+            git log "${LOG_RANGE}" --no-merges --pretty=format:"<li>%s</li>"
             echo "</ul></body></html>"
           } > "$HTML_PATH"
 
