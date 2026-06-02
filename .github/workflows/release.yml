@@ -42,21 +42,27 @@ jobs:
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
           /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION" ViMac-Swift/Info.plist
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ github.run_number }}" ViMac-Swift/Info.plist
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "ZIP_NAME=Vimac-${VERSION}-macOS-arm64.zip" >> "$GITHUB_ENV"
 
       - name: Build Release
         env:
           CI: "true"
         run: make release-build
 
-      - name: Package app
+      - name: Package app and generate Sparkle appcast
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
         run: |
+          set -euo pipefail
           APP_PATH="build/Build/Products/Release/Vimac.app"
           test -d "$APP_PATH"
-          ditto -c -k --keepParent "$APP_PATH" "Vimac-${VERSION}-macOS-arm64.zip"
 
-      - name: Generate release notes
-        run: |
+          mkdir -p sparkle-releases
+          ZIP_PATH="sparkle-releases/${ZIP_NAME}"
+          ditto -c -k --keepParent "$APP_PATH" "$ZIP_PATH"
+
           PREV_TAG=$(git describe --tags --abbrev=0 "${GITHUB_REF_NAME}^" 2>/dev/null || true)
           {
             echo "## Vimac v${VERSION}"
@@ -70,11 +76,52 @@ jobs:
             fi
           } > release-notes.md
 
+          HTML_PATH="sparkle-releases/Vimac-${VERSION}-macOS-arm64.html"
+          {
+            echo '<!DOCTYPE html>'
+            echo '<html><head><meta charset="utf-8">'
+            echo "<title>Vimac v${VERSION}</title></head><body>"
+            echo "<h2>Vimac v${VERSION}</h2>"
+            echo "<ul>"
+            if [ -n "$PREV_TAG" ]; then
+              git log "${PREV_TAG}..HEAD" --no-merges --pretty=format:"<li>%s</li>"
+            else
+              git log --no-merges --pretty=format:"<li>%s</li>"
+            fi
+            echo "</ul></body></html>"
+          } > "$HTML_PATH"
+
+          ./Pods/Sparkle/bin/generate_appcast \
+            -s "$SPARKLE_PRIVATE_KEY" \
+            --download-url-prefix "https://github.com/kaiwen-wang/vimac/releases/download/${GITHUB_REF_NAME}/" \
+            --release-notes-url-prefix "https://github.com/kaiwen-wang/vimac/releases/download/${GITHUB_REF_NAME}/" \
+            -o appcast.xml \
+            sparkle-releases/
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           name: "v${{ env.VERSION }}"
           body_path: release-notes.md
-          files: Vimac-${{ env.VERSION }}-macOS-arm64.zip
+          files: |
+            sparkle-releases/${{ env.ZIP_NAME }}
+            sparkle-releases/Vimac-${{ env.VERSION }}-macOS-arm64.html
           draft: false
           prerelease: ${{ contains(github.ref_name, '-') }}
+
+      - name: Publish appcast to master
+        run: |
+          set -euo pipefail
+          cp appcast.xml /tmp/appcast.xml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin master
+          git checkout master
+          cp /tmp/appcast.xml appcast.xml
+          git add appcast.xml
+          if git diff --staged --quiet; then
+            echo "No appcast changes to commit"
+            exit 0
+          fi
+          git commit -m "Update appcast for v${VERSION}"
+          git push origin master

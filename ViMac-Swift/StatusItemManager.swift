@@ -39,7 +39,7 @@ extension StatusItemManager : NSMenuDelegate {
             
             menu.addItem(withTitle: "About", action: #selector(aboutClick), keyEquivalent: "").target = self
             menu.addItem(withTitle: "Preferences", action: #selector(preferencesClick), keyEquivalent: "").target = self
-//            menu.addItem(withTitle: "Check for updates", action: #selector(checkForUpdatesClick), keyEquivalent: "").target = self
+            menu.addItem(withTitle: "Check for Updates…", action: #selector(checkForUpdatesClick), keyEquivalent: "").target = self
             menu.addItem(NSMenuItem.separator())
             menu.addItem(withTitle: "Quit", action: #selector(quitClick), keyEquivalent: "").target = self
         }

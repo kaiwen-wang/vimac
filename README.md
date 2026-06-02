@@ -3,7 +3,6 @@
 I am maintaining this app to keep up to date.
 
 Todo:
-- Set up updater
 - Fix any bugs/outdated links
 
 ---
@@ -112,20 +111,20 @@ GitHub Actions runs on every push and pull request to `master` / `main`:
 
 - **CI** (`.github/workflows/ci.yml`) — installs CocoaPods/Carthage dependencies and runs `make ci-build`.
 
-To publish a **GitHub Release** with a zipped `.app`:
+To publish a **GitHub Release** with Sparkle auto-updates:
 
-1. Bump the version in `ViMac-Swift/Info.plist` if needed (the workflow also sets `CFBundleShortVersionString` from the tag).
+1. Add the Sparkle EdDSA private key as the repository secret `SPARKLE_PRIVATE_KEY` (from `security find-generic-password -s "https://sparkle-project.org" -a ed25519 -w`).
 2. Commit and push.
-3. Create and push a version tag:
+3. Create and push a version tag (this sets the marketing version, e.g. `v1.0.1` → `1.0.1`):
 
 ```bash
 git tag v1.0.0
 git push origin v1.0.0
 ```
 
-The **Release** workflow (`.github/workflows/release.yml`) builds an unsigned Release `.app`, zips it, and attaches it to a GitHub Release. Builds are unsigned, so macOS Gatekeeper may require right-click → Open the first time.
+The **Release** workflow (`.github/workflows/release.yml`) builds an unsigned Release `.app`, zips it, signs it for Sparkle, creates a GitHub Release, and commits an updated `appcast.xml` to `master` (served at the `SUFeedURL` in `Info.plist`). Builds are unsigned, so macOS Gatekeeper may require right-click → Open the first time.
 
-For signed/notarized builds (App Store or Sparkle distribution), you need Apple Developer certificates configured as repository secrets; the local `make archive` target is set up for that path.
+For signed/notarized builds (App Store or distribution without Gatekeeper warnings), you need Apple Developer certificates configured as repository secrets; the local `make archive` target is set up for that path.
 
 ## Contributing
 
