@@ -16,6 +16,8 @@ class ScrollModeActiveScrollAreaViewController: NSViewController {
     var scrollModeInputState: ScrollModeInputState
     var borderView: BorderView?
     var scroller: Scroller?
+    /// Characters currently held that started scrolling, in press order (last wins for direction).
+    private var heldScrollKeys: [(Character, ScrollDirection)] = []
     let disposeBag = DisposeBag()
     
     init(scrollArea: Element, inputListener: InputListener) {
@@ -69,11 +71,11 @@ class ScrollModeActiveScrollAreaViewController: NSViewController {
             guard let self = self else { return }
             guard let characters = event.characters else { return }
             
-            if self.isScrolling() {
-                return
-            }
-            
             for c in characters {
+                if self.heldScrollKeys.contains(where: { $0.0 == c }) {
+                    continue
+                }
+                
                 let status = try! self.scrollModeInputState.advance(key: c)
                 switch status {
                 case .advancable:
@@ -82,6 +84,7 @@ class ScrollModeActiveScrollAreaViewController: NSViewController {
                 case .deadend:
                     self.resetInputState()
                 case .match(let scrollDirection):
+                    self.heldScrollKeys.append((c, scrollDirection))
                     self.scroll(scrollDirection)
                     self.resetInputState()
                     break
@@ -103,12 +106,23 @@ class ScrollModeActiveScrollAreaViewController: NSViewController {
     private func observeKeyUp() -> Disposable {
         return inputListener.keyUpEvents.bind(onNext: { [weak self] event in
             guard let self = self else { return }
+            guard let characters = event.characters else { return }
             
-            self.stopScrolling()
+            for c in characters {
+                self.heldScrollKeys.removeAll(where: { $0.0 == c })
+            }
+            
+            if self.heldScrollKeys.isEmpty {
+                self.stopScrolling()
+            } else if let (_, direction) = self.heldScrollKeys.last {
+                self.scroll(direction)
+            }
         })
     }
     
     private func scroll(_ direction: ScrollDirection) {
+        stopScrolling()
+        
         if [.left, .right, .up, .down, .top, .bottom].contains(direction) {
             self.scroller = ChunkyScroller.instantiateForSmoothScroll(direction: direction)
             self.scroller?.start()
@@ -128,10 +142,6 @@ class ScrollModeActiveScrollAreaViewController: NSViewController {
     
     private func resetInputState() {
         scrollModeInputState = ScrollModeInputState.instantiate()
-    }
-    
-    private func isScrolling() -> Bool {
-        scroller != nil
     }
     
     private func stopScrolling() {
