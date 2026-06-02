@@ -61,17 +61,17 @@ final class HintModePreferenceViewController: NSViewController, NSTextFieldDeleg
         let textSizeRow: [NSView] = [textSizeLabel, textSizeField]
         grid.addRow(with: textSizeRow)
         
-        let clickModifiersHeader = NSTextField(labelWithString: "Click Modifiers:")
-        clickModifiersHeader.font = .boldSystemFont(ofSize: 13)
-        grid.addRow(with: [clickModifiersHeader, NSGridCell.emptyContentView])
-        
-        let clickModifiersLabel = NSTextField(wrappingLabelWithString: "When typing hint characters, use these modifier keys:")
-        clickModifiersLabel.font = .labelFont(ofSize: 12)
-        clickModifiersLabel.textColor = .secondaryLabelColor
-        grid.addRow(with: [NSGridCell.emptyContentView, clickModifiersLabel])
+        grid.addRow(with: [])
 
+        let clickModifiersLabel = NSTextField(labelWithString: "Click Modifiers:")
         let bindingsView = buildClickModifierBindingsView()
-        grid.addRow(with: [NSGridCell.emptyContentView, bindingsView])
+        grid.addRow(with: [clickModifiersLabel, bindingsView])
+        grid.cell(for: clickModifiersLabel)!.yPlacement = .top
+
+        let clickModifiersHint = NSTextField(wrappingLabelWithString: "When typing hint characters, use these modifier keys:")
+        clickModifiersHint.font = .labelFont(ofSize: 11)
+        clickModifiersHint.textColor = .secondaryLabelColor
+        grid.addRow(with: [NSGridCell.emptyContentView, clickModifiersHint])
 
         let noModifierHint = NSTextField(wrappingLabelWithString: "No modifier: Left Click")
         noModifierHint.font = .labelFont(ofSize: 11)
