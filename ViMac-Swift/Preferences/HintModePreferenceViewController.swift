@@ -134,8 +134,9 @@ final class HintModePreferenceViewController: NSViewController, NSTextFieldDeleg
     private func buildClickModifierBindingsView() -> NSView {
         let container = NSGridView(numberOfColumns: 2, rows: 0)
         container.translatesAutoresizingMaskIntoConstraints = false
-        container.rowSpacing = 6
+        container.rowSpacing = 8
         container.columnSpacing = 10
+        container.rowAlignment = .firstBaseline
         container.column(at: 0).xPlacement = .trailing
 
         let current = UserPreferences.HintMode.ClickModifierBindingsProperty.readAsMap()
@@ -145,11 +146,6 @@ final class HintModePreferenceViewController: NSViewController, NSTextFieldDeleg
             popup.translatesAutoresizingMaskIntoConstraints = false
             popup.target = self
             popup.action = #selector(onClickModifierPopupChanged)
-            popup.wantsLayer = true
-            popup.layer?.cornerRadius = 6
-            popup.layer?.borderWidth = 1
-            popup.layer?.borderColor = NSColor.separatorColor.cgColor
-            popup.contentTintColor = .labelColor
             ClickActionChoice.allCases.forEach { popup.addItem(withTitle: $0.title) }
             popup.selectItem(withTitle: selected.title)
             return popup
@@ -203,8 +199,14 @@ final class HintModePreferenceViewController: NSViewController, NSTextFieldDeleg
         for (modifier, popup) in modifierPopups {
             let choice = ClickActionChoice.from(action: map[modifier] ?? .leftClick).rawValue
             let isDuplicate = (counts[choice] ?? 0) > 1
-            popup.layer?.borderColor = (isDuplicate ? NSColor.systemRed : NSColor.separatorColor).cgColor
-            popup.layer?.borderWidth = isDuplicate ? 2 : 1
+            if isDuplicate {
+                popup.wantsLayer = true
+                popup.layer?.cornerRadius = 6
+                popup.layer?.borderColor = NSColor.systemRed.cgColor
+                popup.layer?.borderWidth = 2
+            } else {
+                popup.layer?.borderWidth = 0
+            }
         }
     }
 
