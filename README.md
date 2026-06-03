@@ -1,6 +1,6 @@
 # A fork of the original Vimac
 
-Maintained fork of [Vimac](https://github.com/dexterleng/vimac) by [kaiwen-wang](https://github.com/kaiwen-wang). Download releases from [GitHub Releases](https://github.com/kaiwen-wang/vimac/releases); updates are delivered via Sparkle.
+Maintained fork of [Vimac](https://github.com/dexterleng/vimac) by [kaiwen-wang](https://github.com/kaiwen-wang). Visit the [website](https://kaiwen-wang.github.io/vimac/), download releases from [GitHub Releases](https://github.com/kaiwen-wang/vimac/releases/latest), and get updates via Sparkle.
 
 ## Improvements in this fork
 
@@ -41,9 +41,9 @@ Vimac is heavily inspired by [Vimium](https://github.com/philc/vimium/).
 
 ## Getting Started
 
-You can download Vimac [here](https://vimacapp.com). Unzip the file and move `Vimac.app` to `Applications/`.
+You can download Vimac from the [latest release](https://github.com/kaiwen-wang/vimac/releases/latest). Unzip the file and move `Vimac.app` to `Applications/`.
 
-You can refer to the manual [here](https://vimacapp.com/manual).
+Visit the [website](https://kaiwen-wang.github.io/vimac/) or refer to the manual [here](https://github.com/kaiwen-wang/vimac/blob/master/docs/manual.md).
 
 ## How does Vimac work?
 
