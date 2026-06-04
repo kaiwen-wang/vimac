@@ -19,5 +19,12 @@
             <sparkle:releaseNotesLink>https://github.com/kaiwen-wang/vimac/releases/download/v1.0.2/Vimac-1.0.2-macOS-arm64.html</sparkle:releaseNotesLink>
             <enclosure url="https://github.com/kaiwen-wang/vimac/releases/download/v1.0.2/Vimac-1.0.2-macOS-arm64.zip" sparkle:version="3" sparkle:shortVersionString="1.0.2" length="14560224" type="application/octet-stream" sparkle:edSignature="dErNypqUhyKvPQsZhbsvso2mALWonAkm4lzFOkArZqwScAH7NTOjcnjJsk6iuR5EAfWEyueCbRkoa9Euh5udBg=="/>
         </item>
+        <item>
+            <title>1.0.3</title>
+            <pubDate>Thu, 04 Jun 2026 19:07:06 +0000</pubDate>
+            <sparkle:minimumSystemVersion>10.14</sparkle:minimumSystemVersion>
+            <sparkle:releaseNotesLink>https://github.com/kaiwen-wang/vimac/releases/download/v1.0.3/Vimac-1.0.3-macOS.html</sparkle:releaseNotesLink>
+            <enclosure url="https://github.com/kaiwen-wang/vimac/releases/download/v1.0.3/Vimac-1.0.3-macOS.zip" sparkle:version="4" sparkle:shortVersionString="1.0.3" length="14673630" type="application/octet-stream" sparkle:edSignature="eJSbfUs8rj3jF2euf6xNGk2Na/x1lOdBHCyWLAiu2vJt6jWE5gm+2RAcgUKI6uWJ/5tVuhUghpdQRbhrk59fAQ=="/>
+        </item>
     </channel>
 </rss>
