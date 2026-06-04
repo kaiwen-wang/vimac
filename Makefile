@@ -1,4 +1,4 @@
-.PHONY: build ci-build release-build run qr clean deploy install launch-installed open kill logs help lint bump bump-version changelog setup ensure-deps check-tools brew-deps
+.PHONY: build ci-build release-build release-dist signing-install signing-github-secrets run qr clean deploy install launch-installed open kill logs help lint bump bump-version changelog setup ensure-deps check-tools brew-deps
 
 # Project configuration
 WORKSPACE = Vimac.xcworkspace
@@ -63,11 +63,23 @@ ci-build: ensure-deps ## CI build (Debug, unsigned; skips auto-bump)
 		-configuration Debug \
 		build
 
-release-build: ensure-deps ## Release build (unsigned; for GitHub Releases)
-	@echo "Building $(SCHEME) (Release)..."
+release-build: ensure-deps ## Release build (unsigned; local only)
+	@echo "Building $(SCHEME) (Release, unsigned)..."
 	@$(XCODEBUILD_UNSIGNED) \
 		-configuration Release \
 		build
+
+signing-install: ## Install signing/developerID_application.cer (+ optional .p12) into keychain
+	@chmod +x scripts/signing-install.sh scripts/load-signing-env.sh
+	@./scripts/signing-install.sh
+
+signing-github-secrets: ## Print base64 secret values for GitHub Actions
+	@chmod +x scripts/signing-github-secrets.sh scripts/load-signing-env.sh
+	@./scripts/signing-github-secrets.sh
+
+release-dist: ensure-deps ## Signed Developer ID build + notarize (for GitHub Releases)
+	@chmod +x scripts/release-package.sh scripts/load-signing-env.sh
+	@./scripts/release-package.sh
 
 lint: ## Quick compile check - shows only errors and warnings
 	@echo "Checking $(SCHEME) for errors..."
@@ -134,16 +146,17 @@ install: ## Install already-built app to /Applications (no build)
 launch-installed: ## Launch /Applications/Vimac.app (no build/install)
 	@open /Applications/$(APP_NAME).app
 
-archive: auto-bump ## Build a Release archive
+archive: auto-bump ## Build a signed Release archive (Apple Development or Developer ID)
 	@echo "Archiving $(SCHEME)..."
 	@mkdir -p $(BUILD_DIR)
 	@xcodebuild -workspace $(WORKSPACE) \
 		-scheme $(SCHEME) \
 		-configuration Release \
 		-derivedDataPath $(BUILD_DIR) \
-		-destination 'platform=macOS,arch=arm64' \
+		-destination 'generic/platform=macOS' \
 		CODE_SIGN_STYLE=Automatic \
 		DEVELOPMENT_TEAM=$(TEAM_ID) \
+		BUILD_ENV=CI \
 		-archivePath $(BUILD_DIR)/$(APP_NAME).xcarchive \
 		-allowProvisioningUpdates \
 		archive

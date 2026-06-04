@@ -147,9 +147,36 @@ git tag v1.0.0
 git push origin v1.0.0
 ```
 
-The **Release** workflow (`.github/workflows/release.yml`) builds an unsigned Release `.app`, zips it, signs it for Sparkle, creates a GitHub Release, and commits an updated `appcast.xml` to `master` (served at the `SUFeedURL` in `Info.plist`). Builds are unsigned, so macOS Gatekeeper may require right-click → Open the first time.
+The **Release** workflow (`.github/workflows/release.yml`) builds a **Developer ID signed + notarized** universal macOS `.app`, zips it, publishes a GitHub Release, and updates `appcast.xml` on `master`.
 
-For signed/notarized builds (App Store or distribution without Gatekeeper warnings), you need Apple Developer certificates configured as repository secrets; the local `make archive` target is set up for that path.
+### One-time: signing files (local, gitignored)
+
+Keep certs in **`signing/`** (never committed). See `signing/README.md`.
+
+```bash
+cp signing/.env.example signing/.env   # add P12_PASSWORD, notary API paths
+# Place developerID_application.cer in signing/ (from Apple)
+# Export signing/developer-id.p12 from Keychain Access (cert + private key)
+
+make signing-install    # install .cer / .p12 into keychain
+make release-dist       # signed + notarized zip in sparkle-releases/
+```
+
+### GitHub Actions secrets
+
+```bash
+make signing-github-secrets   # prints values to paste into GitHub
+```
+
+| Secret | Description |
+|--------|-------------|
+| `SPARKLE_PRIVATE_KEY` | Sparkle EdDSA private key |
+| `BUILD_CERTIFICATE_BASE64` | From `signing/developer-id.p12` |
+| `P12_PASSWORD` | Same as `signing/.env` |
+| `KEYCHAIN_PASSWORD` | Any random string |
+| `NOTARY_API_KEY_ID` / `NOTARY_API_ISSUER_ID` / `NOTARY_API_KEY_BASE64` | App Store Connect API key |
+
+Unsigned local builds: `make build` / `make release-build`.
 
 ## Contributing
 

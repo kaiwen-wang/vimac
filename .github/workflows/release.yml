@@ -41,30 +41,43 @@ jobs:
       - name: Install dependencies
         run: make setup
 
+      - name: Import code signing certificate
+        env:
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          chmod +x scripts/ci-setup-signing.sh
+          ./scripts/ci-setup-signing.sh
+
       - name: Set version from tag
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
           /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION" ViMac-Swift/Info.plist
           /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ github.run_number }}" ViMac-Swift/Info.plist
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
-          echo "ZIP_NAME=Vimac-${VERSION}-macOS-arm64.zip" >> "$GITHUB_ENV"
+          echo "ZIP_NAME=Vimac-${VERSION}-macOS.zip" >> "$GITHUB_ENV"
 
-      - name: Build Release
+      - name: Build, sign, and notarize release
         env:
           CI: "true"
-        run: make release-build
+          NOTARY_API_KEY_ID: ${{ secrets.NOTARY_API_KEY_ID }}
+          NOTARY_API_ISSUER_ID: ${{ secrets.NOTARY_API_ISSUER_ID }}
+          NOTARY_API_KEY_BASE64: ${{ secrets.NOTARY_API_KEY_BASE64 }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          ZIP_NAME: ${{ env.ZIP_NAME }}
+        run: |
+          chmod +x scripts/release-package.sh
+          ./scripts/release-package.sh
 
       - name: Package app and generate Sparkle appcast
         env:
           SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
         run: |
           set -euo pipefail
-          APP_PATH="build/Build/Products/Release/Vimac.app"
-          test -d "$APP_PATH"
-
-          mkdir -p sparkle-releases
           ZIP_PATH="sparkle-releases/${ZIP_NAME}"
-          ditto -c -k --keepParent "$APP_PATH" "$ZIP_PATH"
+          test -f "$ZIP_PATH"
 
           PREV_TAG=$(git describe --tags --abbrev=0 "${GITHUB_REF_NAME}^" 2>/dev/null || true)
           LOG_RANGE="${GITHUB_REF_NAME}"
@@ -73,6 +86,10 @@ jobs:
           fi
           {
             echo "## Vimac v${VERSION}"
+            echo ""
+            echo "Signed and notarized build for macOS (Apple Silicon and Intel)."
+            echo ""
+            echo "Install: unzip, move **Vimac.app** to **Applications**, then open from there."
             echo ""
             if [ -n "$PREV_TAG" ]; then
               echo "Changes since ${PREV_TAG}:"
@@ -83,7 +100,7 @@ jobs:
             fi
           } > release-notes.md
 
-          HTML_PATH="sparkle-releases/Vimac-${VERSION}-macOS-arm64.html"
+          HTML_PATH="sparkle-releases/Vimac-${VERSION}-macOS.html"
           {
             echo '<!DOCTYPE html>'
             echo '<html><head><meta charset="utf-8">'
@@ -108,7 +125,7 @@ jobs:
           body_path: release-notes.md
           files: |
             sparkle-releases/${{ env.ZIP_NAME }}
-            sparkle-releases/Vimac-${{ env.VERSION }}-macOS-arm64.html
+            sparkle-releases/Vimac-${{ env.VERSION }}-macOS.html
           draft: false
           prerelease: ${{ contains(github.ref_name, '-') }}
 

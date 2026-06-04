@@ -30,6 +30,11 @@ post_install do |installer|
   installer.pods_project.targets.each do |target|
     target.build_configurations.each do |config|
       config.build_settings['MACOSX_DEPLOYMENT_TARGET'] = '10.14'
+      if config.name == 'Release'
+        config.build_settings['CODE_SIGN_STYLE'] = 'Manual'
+        config.build_settings['CODE_SIGN_IDENTITY'] = 'Developer ID Application'
+        config.build_settings['DEVELOPMENT_TEAM'] = '5RV873WV4N'
+      end
     end
   end
 end
